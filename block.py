@@ -25,31 +25,25 @@ class Block:
 class Blockchain:
     def __init__(self):
         self.chain = [self.create_genesis_block()]
-        self.difficulty = 4  # Atur tingkat kesulitan proof of work (jumlah nol di depan hash)
+        self.difficulty = 4
 
     def create_genesis_block(self):
         """
         Blok pertama dalam blockchain, disebut sebagai blok genesis.
         """
-        return Block(0, "0", time.time(), "Genesis Block")
+        return Block(0, "0", time.time(), "Genesis Block", 0)
 
     def get_latest_block(self):
         """
-        Mengembalikan blok terakhir di dalam blockchain
+        Mengembalikan blok terakhir di dalam blockchain.
         """
         return self.chain[-1]
 
-    def add_block(self, data, extra_attributes=None):
+    def add_block(self, new_block):
         """
-        Menambahkan blok baru ke dalam blockchain. Dapat menerima atribut tambahan (extra_attributes).
+        Menambahkan blok baru ke dalam blockchain setelah memvalidasi proof of work.
         """
-        latest_block = self.get_latest_block()
-        new_block = Block(len(self.chain), latest_block.hash, time.time(), data)
-
-        # Jika ada atribut tambahan, tambahkan ke dalam data blok
-        if extra_attributes:
-            new_block.data = {**{"data": data}, **extra_attributes}  # Gabungkan data dan atribut tambahan
-
+        new_block.previous_hash = self.get_latest_block().hash
         new_block.hash = self.proof_of_work(new_block)
         self.chain.append(new_block)
 
@@ -66,7 +60,7 @@ class Blockchain:
 
     def is_chain_valid(self):
         """
-        Memeriksa validitas blockchain dengan memverifikasi setiap blok dan hash yang saling merujuk.
+        Memeriksa validasi blockchain dengan memverifikasi setiap blok dan hash yang saling merujuk.
         """
         for i in range(1, len(self.chain)):
             current_block = self.chain[i]
@@ -76,24 +70,23 @@ class Blockchain:
             if current_block.hash != current_block.calculate_hash():
                 print(f"Hash of block {i} is invalid!")
                 return False
-
+            
             # Periksa apakah blok ini merujuk ke hash blok sebelumnya dengan benar
             if current_block.previous_hash != previous_block.hash:
                 print(f"Previous hash of block {i} is invalid!")
                 return False
-
+        
         return True
-
 
 # Demonstrasi
 
 # Membuat blockchain baru
 my_blockchain = Blockchain()
 
-# Menambah beberapa blok baru ke dalam blockchain dengan atribut tambahan
-my_blockchain.add_block("Transaksi 1", {"sender": "Dwi", "receiver": "Rian", "amount": 10})
-my_blockchain.add_block("Transaksi 2", {"sender": "Rian", "receiver": "Lutfi", "amount": 5})
-my_blockchain.add_block("Transaksi 3", {"sender": "Lutfi", "receiver": "Hanif", "amount": 2})
+# Menambah beberapa blok baru ke dalam blockchain
+my_blockchain.add_block(Block(1, "", time.time(), "Transaksi 1"))
+my_blockchain.add_block(Block(2, "", time.time(), "Transaksi 2"))
+my_blockchain.add_block(Block(3, "", time.time(), "Transaksi 3"))
 
 # Cetak seluruh blok di dalam blockchain
 for block in my_blockchain.chain:
